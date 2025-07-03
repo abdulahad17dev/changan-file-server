@@ -1,0 +1,24 @@
+PNG_MOCK_ICON_FOR_YOUTUBE_AA
+This is a mock PNG icon file for testing purposes.
+In real scenario, this would be a 512x512 PNG image file.
+
+MOCK BINARY DATA FOR PNG:
+‰PNG
+
+IHDR  1 1 
+
+chunk data would be here in real PNG file...
+
+YouTube AA App Icon
+Size: 512x512 pixels
+Format: PNG
+Background: Red gradient
+Foreground: White play button symbol
+Text: "YT AA" in white
+
+This mock file serves as placeholder for:
+- Static serving at /static/icons/youtube-aa/icon.png
+- Testing icon loading in Chang'an VCS API
+- Validation script checks
+
+For production use, replace with actual PNG icon file.

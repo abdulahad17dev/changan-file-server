@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "version_number": 100000,
+  "apk_filename": "app.apk",
+  "file_size": 6206722,
+  "hash_code": "9e28ee2549cc4eeeda0d0555bcdf2557",
+  "hash_type": "md5",
+  "release_notes": "Первая стабильная версия YouTube AA для Chang'an VCS. Включает полную поддержку видео, плейлистов и поиска.",
+  "min_android_version": "5.0",
+  "target_android_version": "13.0",
+  "permissions": [
+    "INTERNET",
+    "ACCESS_NETWORK_STATE",
+    "ACCESS_WIFI_STATE",
+    "WRITE_EXTERNAL_STORAGE",
+    "READ_EXTERNAL_STORAGE"
+  ],
+  "features": [
+    "Полноэкранное видео",
+    "Поиск по YouTube",
+    "Управление плейлистами",
+    "Голосовое управление",
+    "Оптимизация для автомобиля"
+  ],
+  "changelog": [
+    "Добавлена поддержка Chang'an VCS",
+    "Оптимизирован интерфейс для экранов автомобиля",
+    "Улучшена производительность видео",
+    "Исправлены ошибки совместимости"
+  ],
+  "released_at": "2025-07-03T10:00:00Z"
+}

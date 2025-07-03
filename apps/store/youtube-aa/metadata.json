@@ -1,0 +1,22 @@
+{
+  "app_id": "youtube-aa-20250703001",
+  "name": "YouTube AA",
+  "package_name": "com.carwizard.li.youtube",
+  "developer": "CarWizard",
+  "category": "1",
+  "type": "1",
+  "slogan": "Смотри YouTube в машине без ограничений",
+  "description": "Полнофункциональный YouTube клиент для Android Auto. Позволяет смотреть видео, управлять плейлистами и наслаждаться контентом прямо в автомобиле Chang'an. Совместим с системой VCS и оптимизирован для использования в дороге.",
+  "tags": [
+    "video",
+    "entertainment", 
+    "streaming",
+    "android-auto",
+    "youtube"
+  ],
+  "featured": true,
+  "restricted_state": 0,
+  "uninstall": true,
+  "created_at": "2025-07-03T10:00:00Z",
+  "updated_at": "2025-07-03T10:00:00Z"
+}

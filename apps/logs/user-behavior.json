@@ -1,0 +1,16 @@
+{
+  "user_behaviors": [
+    {
+      "timestamp": "2025-07-03T13:48:40.762Z",
+      "access_token": "test_token",
+      "behavior_detail": "[{\"action\":\"app_click\",\"app_id\":\"youtube-aa-20250703001\"}]",
+      "source": "appserver"
+    }
+  ],
+  "analytics": {
+    "total_events": 1,
+    "unique_users": 0,
+    "popular_actions": {},
+    "last_updated": "2025-07-03T13:48:40.762Z"
+  }
+}

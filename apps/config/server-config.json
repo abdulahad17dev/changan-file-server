@@ -1,0 +1,45 @@
+{
+  "server": {
+    "port": 3000,
+    "host": "localhost",
+    "base_url": "http://localhost:3000",
+    "dev_port": 3004,
+    "dev_host": "localhost"
+  },
+  "ssl": {
+    "cert_path": "./server-cert.pem",
+    "key_path": "./server-key.pem",
+    "auto_generate": true
+  },
+  "pagination": {
+    "default_page_size": 10,
+    "max_page_size": 50
+  },
+  "download": {
+    "max_concurrent_downloads": 3,
+    "retry_attempts": 3,
+    "timeout_seconds": 300
+  },
+  "file_scanning": {
+    "auto_scan_interval": 30000,
+    "watch_files": true,
+    "supported_extensions": [".apk"],
+    "max_file_size_mb": 100
+  },
+  "static_serving": {
+    "cache_control": "public, max-age=3600",
+    "enable_compression": true
+  },
+  "logging": {
+    "level": "info",
+    "log_requests": true,
+    "log_file": "./apps/logs/server.log"
+  },
+  "app_validation": {
+    "require_icon": true,
+    "require_metadata": true,
+    "auto_generate_hash": true,
+    "icon_min_size": "64x64",
+    "icon_max_size": "1024x1024"
+  }
+}

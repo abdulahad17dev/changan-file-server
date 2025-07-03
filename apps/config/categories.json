@@ -1,0 +1,36 @@
+{
+  "categories": [
+    {
+      "dictLabel": "视频",
+      "dictValue": "1",
+      "description": "Видео приложения (YouTube, Netflix, и т.д.)"
+    },
+    {
+      "dictLabel": "阅读", 
+      "dictValue": "3",
+      "description": "Приложения для чтения"
+    },
+    {
+      "dictLabel": "电台资讯",
+      "dictValue": "5", 
+      "description": "Радио и новости"
+    },
+    {
+      "dictLabel": "音乐",
+      "dictValue": "7",
+      "description": "Музыкальные приложения"
+    },
+    {
+      "dictLabel": "游戏",
+      "dictValue": "12",
+      "description": "Игры и развлечения"
+    },
+    {
+      "dictLabel": "其他",
+      "dictValue": "99",
+      "description": "Другие приложения"
+    }
+  ],
+  "default_category": "99",
+  "last_updated": "2025-07-03T10:00:00Z"
+}

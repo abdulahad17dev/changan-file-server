@@ -1,0 +1,51 @@
+{
+  "name": "changan-file-server",
+  "version": "1.0.0",
+  "description": "File-based Chang'an App Store Server with VCS API compatibility",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "dev-local": "NODE_ENV=development node server.js",
+    "generate-certs": "node scripts/generate-certs.js",
+    "add-app": "node scripts/add-app.js",
+    "validate-apps": "node scripts/validate-apps.js",
+    "bulk-import": "node scripts/bulk-import.js",
+    "stats": "node scripts/stats.js",
+    "setup": "npm install && npm run generate-certs"
+  },
+  "keywords": [
+    "changan",
+    "vcs",
+    "app-store",
+    "android-auto",
+    "file-based",
+    "automotive"
+  ],
+  "author": "Chang'an File Server Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "chokidar": "^3.5.3",
+    "crypto": "^1.0.1",
+    "commander": "^9.4.1",
+    "chalk": "^4.1.2",
+    "figlet": "^1.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/changan-file-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-repo/changan-file-server/issues"
+  },
+  "homepage": "https://github.com/your-repo/changan-file-server#readme"
+}
