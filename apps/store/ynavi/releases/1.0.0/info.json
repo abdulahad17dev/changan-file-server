@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "version_number": 100000,
+  "apk_filename": "apk.apk",
+  "file_size": 205584627,
+  "hash_code": "4ba70df738a1e3f9c2b6f0143e300214",
+  "hash_type": "md5",
+  "release_notes": "Yandex Navi stable release",
+  "min_android_version": "5.0",
+  "target_android_version": "13.0",
+  "permissions": [
+    "INTERNET",
+    "ACCESS_NETWORK_STATE",
+    "ACCESS_WIFI_STATE",
+    "WRITE_EXTERNAL_STORAGE",
+    "READ_EXTERNAL_STORAGE"
+  ],
+  "features": [
+    "Навигатор"
+  ],
+  "changelog": [
+    "Добавлена поддержка Chang'an VCS",
+    "Оптимизирован интерфейс для экранов автомобиля",
+    "Улучшена производительность видео",
+    "Исправлены ошибки совместимости"
+  ],
+  "released_at": "2025-07-03T10:00:00Z"
+}

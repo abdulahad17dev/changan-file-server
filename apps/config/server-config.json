@@ -1,10 +1,10 @@
 {
   "server": {
-    "port": 3000,
-    "host": "localhost",
-    "base_url": "http://localhost:3000",
+    "port": 443,
+    "host": "192.168.137.1",
+    "base_url": "https://192.168.137.1",
     "dev_port": 3004,
-    "dev_host": "localhost"
+    "dev_host": "192.168.137.1"
   },
   "ssl": {
     "cert_path": "./server-cert.pem",

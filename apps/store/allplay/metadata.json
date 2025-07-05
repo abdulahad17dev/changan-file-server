@@ -1,0 +1,22 @@
+{
+  "app_id": "allplay-uz",
+  "name": "Allplay",
+  "package_name": "uz.allplay.app",
+  "developer": "Uzbeki",
+  "category": "1",
+  "type": "1",
+  "slogan": "Смотри Allplay в машине без ограничений",
+  "description": "Полнофункциональный Allplay клиент для Android Auto. Позволяет смотреть кино и сериалы, управлять плейлистами и наслаждаться контентом прямо в автомобиле Chang'an. Совместим с системой VCS и оптимизирован для использования в дороге.",
+  "tags": [
+    "video",
+    "entertainment", 
+    "streaming",
+    "android-auto",
+    "allplay"
+  ],
+  "featured": true,
+  "restricted_state": 0,
+  "uninstall": true,
+  "created_at": "2025-07-03T10:00:00Z",
+  "updated_at": "2025-07-03T10:00:00Z"
+}

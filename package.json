@@ -12,7 +12,10 @@
     "validate-apps": "node scripts/validate-apps.js",
     "bulk-import": "node scripts/bulk-import.js",
     "stats": "node scripts/stats.js",
-    "setup": "npm install && npm run generate-certs"
+    "setup": "npm install && npm run generate-certs",
+    "test-downloads": "NODE_ENV=development node test-download-endpoints.js",
+    "test-downloads-prod": "NODE_ENV=production node test-download-endpoints.js",
+    "test-downloads-dev": "node test-download-endpoints.js --dev"
   },
   "keywords": [
     "changan",

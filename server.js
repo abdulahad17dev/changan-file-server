@@ -33,10 +33,12 @@ app.use(express.urlencoded({ extended: true }));
 // Статические файлы
 app.use('/static', express.static(path.join(__dirname, 'static')));
 
-// Middleware для логирования запросов
+// Middleware for logging ALL requests (enhanced debugging)
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
   console.log(`${timestamp} - ${req.method} ${req.url}`);
+  console.log(`🌐 Host header: ${req.headers.host}`);
+  console.log(`🔗 User-Agent: ${req.headers['user-agent']}`);
   
   if (serverConfig.logging.log_requests) {
     console.log('Headers:', JSON.stringify({
@@ -281,6 +283,123 @@ app.get('/hu-apigw/appstore/api/v1/app/query', (req, res) => {
   }
 });
 
+// =============================================================================
+// INSTALLATION ENDPOINTS - Handle post-download installation phase
+// =============================================================================
+
+// 16. Installation Verification Endpoint - Verify Downloaded File
+app.post('/hu-apigw/appstore/api/v1/task/verify-file', (req, res) => {
+  const { task_id, file_hash, file_size } = req.body;
+  
+  console.log(`🔍 File verification requested - Task: ${task_id}`);
+  
+  const response = {
+    code: 0,
+    data: {
+      task_id: task_id,
+      verification_status: 'verified',
+      file_integrity: 'ok',
+      hash_match: true,
+      ready_for_installation: true
+    },
+    msg: "",
+    success: true
+  };
+  
+  console.log(`✅ File verification successful - ready for installation`);
+  res.json(response);
+});
+
+// 17. Installation Start Endpoint - Begin Installation Process  
+app.post('/hu-apigw/appstore/api/v1/task/start-install', (req, res) => {
+  const { task_id, package_name, app_id } = req.body;
+  
+  console.log(`📱 Installation start requested - Task: ${task_id}, Package: ${package_name}`);
+  
+  // Generate installation task ID
+  const installTaskId = `INSTALL_${Date.now()}_${task_id?.slice(-8) || 'UNKNOWN'}`;
+  
+  const response = {
+    code: 0,
+    data: {
+      original_task_id: task_id,
+      install_task_id: installTaskId,
+      install_status: 'installing',
+      progress: 0,
+      estimated_time: 30 // seconds
+    },
+    msg: "",
+    success: true
+  };
+  
+  console.log(`📦 Installation started - Install Task ID: ${installTaskId}`);
+  res.json(response);
+});
+
+// 18. Installation Progress Endpoint - Track Installation Progress
+app.post('/hu-apigw/appstore/api/v1/task/update-install-process', (req, res) => {
+  const { install_task_id, progress, status } = req.body;
+  
+  console.log(`📊 Installation progress update - Task: ${install_task_id}, Progress: ${progress}%`);
+  
+  const response = {
+    code: 0,
+    data: {
+      install_task_id: install_task_id,
+      install_progress: progress || 0,
+      install_status: status || 'installing',
+      completion_estimated: progress >= 90
+    },
+    msg: "",
+    success: true
+  };
+  
+  console.log(`✅ Installation progress: ${progress}%`);
+  res.json(response);
+});
+
+// 19. Installation Complete Endpoint - Complete Installation
+app.post('/hu-apigw/appstore/api/v1/task/complete-install', (req, res) => {
+  const { install_task_id, original_task_id, status, package_name } = req.body;
+  
+  console.log(`🏆 Installation completion - Task: ${install_task_id}, Status: ${status}`);
+  
+  // Update installation logs
+  try {
+    const tasksData = JSON.parse(fs.readFileSync('./apps/logs/tasks.json', 'utf8'));
+    const taskIndex = tasksData.tasks.findIndex(task => task.task_id === original_task_id);
+    
+    if (taskIndex !== -1) {
+      tasksData.tasks[taskIndex].install_status = status || 'installed';
+      tasksData.tasks[taskIndex].install_completed_at = new Date().toISOString();
+      tasksData.tasks[taskIndex].install_task_id = install_task_id;
+      
+      fs.writeFileSync('./apps/logs/tasks.json', JSON.stringify(tasksData, null, 2));
+      console.log(`📈 Installation completed for package: ${package_name}`);
+    }
+  } catch (error) {
+    console.error('Error updating installation status:', error.message);
+  }
+  
+  const response = {
+    code: 0,
+    data: {
+      install_task_id: install_task_id,
+      original_task_id: original_task_id,
+      final_status: status || 'installed',
+      completion_time: new Date().toISOString(),
+      app_ready: true,
+      launch_available: true
+    },
+    msg: "",
+    success: true
+  };
+  
+  console.log(`🎉 📦 Installation completed successfully!`);
+  console.log(`🚀 App is ready to launch: ${package_name}`);
+  res.json(response);
+});
+
 // 4. Initial Parameters Endpoint - Параметры для загрузки
 app.get('/hu-apigw/appstore/api/v1/task/initial-params', (req, res) => {
   console.log('⚙️ Initial params requested');
@@ -518,12 +637,13 @@ app.get('/health', (req, res) => {
 // Форматирование приложения для списка
 function formatAppForList(app) {
   const baseUrl = IS_DEV ? `http://${HOST}:${PORT}` : serverConfig.server.base_url;
+  const gitUrl = `https://github.com/sumatoshi/dhu-apk-list-2/raw/main`;
   
   return {
     app_id: app.app_id,
     name: app.name,
     package_name: app.package_name,
-    icon: `${baseUrl}/static/icons/${app.folder_name}/icon.png`,
+    icon: `${gitUrl}/${app.folder_name}/png.png`,
     slogan: app.slogan || `${app.name} - отличное приложение`,
     version: app.version_info?.version || "1.0.0",
     version_id: app.version_info?.version_number || "100000",
@@ -537,7 +657,7 @@ function formatAppForList(app) {
       file_size: app.version_info?.file_size?.toString() || "0",
       hash_code: app.version_info?.hash_code || generateMockHash(app.app_id),
       hash_type: "md5",
-      url: `${baseUrl}/static/apks/${app.folder_name}/${app.version_info?.version || '1.0.0'}/${app.version_info?.apk_filename || 'app.apk'}`
+      url: `${gitUrl}/${app.folder_name}/apk.apk`
     },
     pay_info: {
       discount: 100.0,
@@ -560,23 +680,46 @@ function formatAppForList(app) {
 // Форматирование приложения для детального просмотра
 function formatAppForDetails(app) {
   const baseUrl = IS_DEV ? `http://${HOST}:${PORT}` : serverConfig.server.base_url;
+  const gitUrl = `https://github.com/sumatoshi/dhu-apk-list-2/raw/main`;
   
   return {
     app_id: app.app_id,
     name: app.name,
     package_name: app.package_name,
     developer: app.developer || "Unknown Developer",
+    icon: `${gitUrl}/${app.folder_name}/png.png`,
     introduction: app.description || "Описание отсутствует",
     notes: app.version_info?.release_notes || "Примечания к версии отсутствуют",
     update_at: app.updated_at ? new Date(app.updated_at).toISOString().slice(0, 10).replace(/-/g, '.') : "2025.07.03",
+    version: app.version_info?.version || "1.0.0",
+    version_id: app.version_info?.version_number?.toString() || "100000",
+    version_number: app.version_info?.version_number || 100000,
+    tid: app.app_id,
+    uninstall: app.uninstall !== undefined ? app.uninstall : true,
     images: {
       horizontal: getAppScreenshots(app.folder_name, 'horizontal'),
       vertical: getAppScreenshots(app.folder_name, 'vertical')
     },
     apk_info: {
+      apk_name: app.version_info?.apk_filename || "app.apk",
       file_size: app.version_info?.file_size?.toString() || "0",
       hash_code: app.version_info?.hash_code || generateMockHash(app.app_id),
-      url: `${baseUrl}/static/apks/${app.folder_name}/${app.version_info?.version || '1.0.0'}/${app.version_info?.apk_filename || 'app.apk'}`
+      hash_type: "md5",
+      url: `${gitUrl}/${app.folder_name}/apk.apk`
+    },
+    pay_info: {
+      discount: 100.0,
+      is_purchase: false,
+      order_source: "APPSTORE",
+      original_price: 0.0,
+      pay_ways: [],
+      price: 0.0
+    },
+    statics: {
+      downloads: "2",
+      installs: "2",
+      uninstalls: "0",
+      updates: "0"
     }
   };
 }
@@ -613,7 +756,12 @@ function generateMockHash(appId) {
 
 // Handle 404 для неопределенных маршрутов
 app.use('*', (req, res) => {
-  console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
+  console.log(`🔴 404 - Route not found: ${req.method} ${req.originalUrl}`);
+  console.log(`🌐 Host: ${req.headers.host}`);
+  console.log(`🤖 User-Agent: ${req.headers['user-agent']}`);
+  console.log(`🔗 Referer: ${req.headers.referer}`);
+  console.log(`⚠️  POTENTIAL MISSING ENDPOINT - Car might be trying to reach a different URL!`);
+  
   res.status(404).json({
     code: 40404,
     data: null,

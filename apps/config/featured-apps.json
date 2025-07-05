@@ -1,16 +1,10 @@
 {
   "featured_apps": [
     {
-      "app_id": "youtube-aa",
+      "app_id": "allplay-uz",
       "priority": 1,
       "reason": "popular",
       "featured_until": "2026-01-01T00:00:00Z"
-    },
-    {
-      "app_id": "yandex-music",
-      "priority": 2,
-      "reason": "new_release",
-      "featured_until": "2025-12-31T23:59:59Z"
     }
   ],
   "auto_feature_rules": {
