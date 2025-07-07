@@ -420,28 +420,213 @@ app.get('/hu-apigw/appstore/api/v1/task/initial-params', (req, res) => {
   res.json(response);
 });
 
-// 5. HuTags Endpoint - Теги для пуш-уведомлений
+// 5. HuTags Endpoint - Proxy to incall.changan.com.cn
 app.post('/hu-apigw/evhu/api/push/getHuTags', (req, res) => {
   const registrationId = req.body.registrationId;
   
   console.log(`🏷️ HuTags requested - Registration ID: ${registrationId}`);
+  console.log('🔄 Proxying request to incall.changan.com.cn');
+  console.log('⚠️  SSL certificate verification disabled for upstream server');
   
-  const response = {
-    code: 0,
-    msg: "成功",
-    success: true,
-    data: {
-      account: "prod_25003001240910270000001017111196",
-      tags: [
-        "prod_C673ICA1-EVE",
-        "prod_深蓝S07-增程版",
-        "prod_SC6481GAA6HEV"
-      ]
+  // Check if client is still connected
+  if (req.destroyed || res.destroyed) {
+    console.log('❌ Client already disconnected, aborting request');
+    return;
+  }
+  
+  // Prepare headers for the upstream request
+  const upstreamHeaders = { ...req.headers };
+  
+  // Remove headers that shouldn't be forwarded
+  delete upstreamHeaders.host;
+  delete upstreamHeaders['content-length']; // Will be recalculated
+  
+  // Set the correct host for upstream
+  upstreamHeaders.host = 'incall.changan.com.cn';
+  
+  // Convert request body to string if it's an object
+  const requestBody = typeof req.body === 'object' ? JSON.stringify(req.body) : req.body;
+  
+  // Configure the upstream request
+  const options = {
+    hostname: 'incall.changan.com.cn',
+    port: 443,
+    path: '/hu-apigw/evhu/api/push/getHuTags',
+    method: 'POST',
+    headers: {
+      ...upstreamHeaders,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(requestBody)
+    },
+    timeout: 30000, // 30 seconds timeout
+    rejectUnauthorized: false // Ignore self-signed certificate errors
+  };
+  
+  console.log(`📤 Forwarding to: https://${options.hostname}${options.path}`);
+  
+  let upstreamReq;
+  let requestCompleted = false;
+  
+  // Function to cleanup and abort upstream request
+  const cleanupUpstreamRequest = () => {
+    if (upstreamReq && !requestCompleted) {
+      console.log('🧹 Cleaning up upstream request due to client disconnect');
+      requestCompleted = true;
+      upstreamReq.destroy();
     }
   };
   
-  console.log('✅ Returning HuTags for Deepal S07 Extended Range EV');
-  res.json(response);
+  // Listen for client disconnect
+  req.on('close', () => {
+    console.log('📴 Client disconnected, aborting upstream request');
+    cleanupUpstreamRequest();
+  });
+  
+  req.on('aborted', () => {
+    console.log('🚫 Request aborted, aborting upstream request');
+    cleanupUpstreamRequest();
+  });
+  
+  res.on('close', () => {
+    console.log('📴 Response stream closed, aborting upstream request');
+    cleanupUpstreamRequest();
+  });
+  
+  // Make the upstream request
+  upstreamReq = https.request(options, (upstreamRes) => {
+    // Check if client is still connected before processing response
+    if (requestCompleted || req.destroyed || res.destroyed) {
+      console.log('❌ Client disconnected during upstream response, aborting');
+      upstreamRes.destroy();
+      return;
+    }
+    
+    console.log(`📥 Received response from upstream: ${upstreamRes.statusCode}`);
+    
+    let responseData = '';
+    
+    // Collect response data
+    upstreamRes.on('data', (chunk) => {
+      if (requestCompleted || req.destroyed || res.destroyed) {
+        console.log('❌ Client disconnected during data reception, stopping');
+        upstreamRes.destroy();
+        return;
+      }
+      responseData += chunk;
+    });
+    
+    // Handle response completion
+    upstreamRes.on('end', () => {
+      if (requestCompleted || req.destroyed || res.destroyed) {
+        console.log('❌ Client disconnected before response completion, aborting');
+        return;
+      }
+      
+      requestCompleted = true;
+      console.log('✅ Upstream response received successfully');
+      
+      try {
+        // Forward the response status and headers
+        res.status(upstreamRes.statusCode);
+        
+        // Forward relevant headers (excluding some that might cause issues)
+        Object.keys(upstreamRes.headers).forEach(key => {
+          if (!['connection', 'transfer-encoding', 'content-encoding'].includes(key.toLowerCase())) {
+            res.set(key, upstreamRes.headers[key]);
+          }
+        });
+        
+        // Try to parse as JSON, otherwise send as text
+        try {
+          const jsonResponse = JSON.parse(responseData);
+          console.log('📋 Response type: JSON');
+          res.json(jsonResponse);
+        } catch (jsonError) {
+          console.log('📋 Response type: Text/Other');
+          res.send(responseData);
+        }
+      } catch (error) {
+        console.error('❌ Error processing upstream response:', error.message);
+        if (!res.headersSent) {
+          res.status(500).json({
+            code: 50000,
+            data: null,
+            msg: "Error processing upstream response",
+            success: false
+          });
+        }
+      }
+    });
+    
+    // Handle upstream response errors
+    upstreamRes.on('error', (error) => {
+      if (requestCompleted) return;
+      requestCompleted = true;
+      console.error('❌ Error in upstream response:', error.message);
+      
+      if (!res.headersSent) {
+        res.status(502).json({
+          code: 50200,
+          data: null,
+          msg: `Upstream response error: ${error.message}`,
+          success: false
+        });
+      }
+    });
+  });
+  
+  // Handle upstream request errors
+  upstreamReq.on('error', (error) => {
+    if (requestCompleted) return;
+    requestCompleted = true;
+    console.error('❌ Error connecting to upstream server:', error.message);
+    
+    if (!res.headersSent) {
+      res.status(502).json({
+        code: 50200,
+        data: null,
+        msg: `Upstream server error: ${error.message}`,
+        success: false
+      });
+    }
+  });
+  
+  // Handle timeout
+  upstreamReq.on('timeout', () => {
+    if (requestCompleted) return;
+    requestCompleted = true;
+    console.error('❌ Upstream request timeout');
+    upstreamReq.destroy();
+    
+    if (!res.headersSent) {
+      res.status(504).json({
+        code: 50400,
+        data: null,
+        msg: "Upstream server timeout",
+        success: false
+      });
+    }
+  });
+  
+  // Send the request body
+  try {
+    upstreamReq.write(requestBody);
+    upstreamReq.end();
+  } catch (error) {
+    if (!requestCompleted) {
+      requestCompleted = true;
+      console.error('❌ Error sending request to upstream:', error.message);
+      
+      if (!res.headersSent) {
+        res.status(502).json({
+          code: 50200,
+          data: null,
+          msg: `Error sending request to upstream: ${error.message}`,
+          success: false
+        });
+      }
+    }
+  }
 });
 
 // 6. Order List Endpoint - История заказов
